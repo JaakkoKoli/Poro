@@ -1,0 +1,47 @@
+User
+- has id (PK)
+- main poro (FK)
+- achievements (?)
+- currencie(s) (INTEGER)
+
+Poro
+- type (FK)
+- owner (user) (FK)
+- name (VARCHAR(50))
+- IVs (one for each stat) (INTEGER) [0, 15](?) 
+- equipment (one or none for each slot) (FK)
+
+Poro type
+- type name (VARCHAR(50))
+- type base stats (INTEGER)
+- type stat growth (INTEGER)
+
+Item
+- id (PK)
+- owner (user) (FK)
+- item name (VARCHAR(50))
+- item type (FK)
+
+Item type
+- id (PK)
+- slot (INTEGER)
+- one or many stat bonuses (FK)
+
+Item-stat
+- item id (FK)
+- stat bonus id (FK)
+
+Stat bonus
+- id (PK)
+- amount (INTEGER)
+- stat in question (INTEGER)
+- stat type (% or flat) (BOOLEAN)
+
+Achievement
+- id (PK)
+- name (VARCHAR(20))
+- description (VARCHAR(100))
+
+User-achievement
+- user id (FK)
+- achievement id (FK)

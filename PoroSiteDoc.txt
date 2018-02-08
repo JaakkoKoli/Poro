@@ -1,0 +1,43 @@
+Main
+- updates
+- news
+
+Profile
+- username + other info
+- main poro and the equipment it has
+- achievements 
+- currencies
+
+Poros
+- list of poros
+- sort function(s)
+- searching with name, rarity
+
+Poro
+- name
+- type
+- stats
+- equipment
+- equip an item
+- change name
+
+Inventory
+- list of items
+- sort function
+
+Item
+- equip / use item
+- delete item
+
+Shop
+- buy items
+- buy poros
+
+Games
+- lottery
+- battle (Twitch)
+
+Porodex
+- list of all available poros
+- searching with name, rarity
+- which you have marked differently from those you don't have

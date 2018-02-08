@@ -1,0 +1,15 @@
+To do:
+1.
+	x- Find a host and choose database type
+	- Create bases for the different pages (basic look)
+	x- Create database
+
+2.
+	- Link pages to databases
+	- Twitch login
+	- Cookies permission (legal stuff)
+
+3.
+	- More games
+	- Systems
+	- bug fixes

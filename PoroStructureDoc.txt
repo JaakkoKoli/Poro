@@ -1,0 +1,9 @@
+Php documents for each page:
+- index
+- porodex
+- profile
+- poros
+- poro
+- shop
+- inventory
+- lottery

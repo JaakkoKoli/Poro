@@ -1,0 +1,26 @@
+-----------
+PORO:
+create new
+rename
+give exp + change level
+delete (?)
+-----------
+USER:
+create new
+rename (upon login if different name)
+change main poro
+change equipped items
+get achievement
+get snacks
+spend snacks
+get item
+get poro
+-----------
+ITEM:
+new
+delete
+-----------
+EQUIPMENT:
+new
+delete
+-----------
