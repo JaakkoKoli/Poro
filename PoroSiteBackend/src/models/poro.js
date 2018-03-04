@@ -9,7 +9,9 @@ const Poro = mongoose.model('Poro', {
     level: Number,
     healthIV: Number,
     attackIV: Number,
-    defenseIV: Number
+    defenseIV: Number,
+    staminaIV: Number,
+    speedIV: Number
 })
 
 module.exports = Poro

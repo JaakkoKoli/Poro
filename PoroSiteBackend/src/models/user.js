@@ -4,6 +4,7 @@ const User = mongoose.model('User', {
     name: String,
     twitchid: String,
     snacks: Number,
+    picture: String,
     weapon: { type: mongoose.Schema.Types.ObjectId, ref: 'Weapon' },
     helmet: { type: mongoose.Schema.Types.ObjectId, ref: 'Helmet' },
     footwear: { type: mongoose.Schema.Types.ObjectId, ref: 'Footwear' },
