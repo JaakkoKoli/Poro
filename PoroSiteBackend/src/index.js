@@ -32,10 +32,10 @@ app.use('/api/users', usersRouter)
 app.use('/api/types', typesRouter)
 
 
-const validateToken = (access_token, refresh_token) => {
+app.get('/validate', (request, response)  => {
   const conf = {
     "headers": {
-      "Authorization": 'OAuth '+access_token,
+      "Authorization": 'OAuth '+request.get('access_token'),
       "Accept": 'application/vnd.twitchtv.v5+json',
       "Client-ID": conf.client_id
     }
@@ -45,19 +45,28 @@ const validateToken = (access_token, refresh_token) => {
       if(!r.data.token.valid && !r.data.valid){
         axios.post('https://api.twitch.tv/kraken/oauth2/token?grant_type=refresh_token&refresh_token='+refresh_token+'&client_id='+config.client_id+'&client_secret='+config.secret)
           .then(r2 => {
-            console.log(r2.data)
             if(r2.data.access_token && r2.data.refresh_token){
-              return({valid: true, access_token: r2.data.access_token, refresh_token: r2.data.refresh_token})
+              response.send({valid: true, access_token: r2.data.access_token, refresh_token: r2.data.refresh_token})
             }
           })
           .catch(e => {
             console.log(e)
-            return({valid: false, access_token, refresh_token})
+            response.send({valid: false, access_token, refresh_token})
           })
       }else{
-        console.log(r.data)
-        console.log("ID: "+r.data.token.user_id+"; NAME: "+r.data.token.user_name)
-        return({valid: true, access_token, refresh_token})
+        User.find({twitchid: r.data.token.user_id})
+          .then(user => {
+            user=user[0]
+            if(r.data.token.user_name!=user.name){
+              User(user).save()
+                .then(() => {
+                  response.send({valid: true, user, access_token: r.data.access_token, refresh_token: r.data.refresh_token})
+                })
+            }else{
+              response.send({valid: true, user, access_token: r.data.access_token, refresh_token: r.data.refresh_token})
+            }
+          })
+        response.send({valid: true, access_token, refresh_token})
         
       }
     })

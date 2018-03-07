@@ -64,19 +64,29 @@ class App extends React.Component {
     }
   }
 
-  setUser(user){
+  logout = () => {
+    window.localStorage.clear()
+    this.setState({user: null, access_token: null, refresh_token: null})
+  }
+
+  setUser = (user) => {
     this.setState({user: user})
   }
 
-  setUserData(){
+  saveUser = () => {
+    window.localStorage.setItem('loggedUserData', JSON.stringify({user: this.state.user, access_token: this.state.access_token, refresh_token: this.state.refresh_token}))
+  }
+
+  setUserData = () => {
     axios.get('http://localhost:3001/login?'+this.state.code)
         .then(res => {
+          console.log(res)
           this.setState({
             user: res.data.user,
             access_token: res.data.access_token,
             refresh_token: res.data.refresh_token,
             popup: res.data.new_account
-          })
+          }, this.saveUser)
         })
         .catch(e => console.log(e))
   }
@@ -84,6 +94,12 @@ class App extends React.Component {
   componentWillMount(){
     if(this.state.code.includes('code=')){
       this.setState({code: this.state.code.split('?')[1].split('&')[0]}, this.setUserData)
+    }else{
+      const loggedUserJSON = window.localStorage.getItem('loggedUserData')
+      if (loggedUserJSON) {
+        const data = JSON.parse(loggedUserJSON)
+        this.setState({ user: data.user, access_token: data.access_token, refresh_token: data.refresh_token })
+      }
     }
   }
   
@@ -91,7 +107,8 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        {this.state.user === null ?  <div><a href="https://api.twitch.tv/kraken/oauth2/authorize?client_id=pho06vchppcq16eknimsbqagdxkxya&redirect_uri=http://localhost:3000&response_type=code">authorise</a></div> : 'logged in as '+this.state.user.name+' --- '+this.state.user.snacks+' snacks'}
+        {this.state.user === null ?  <div><a href="https://api.twitch.tv/kraken/oauth2/authorize?client_id=pho06vchppcq16eknimsbqagdxkxya&redirect_uri=http://localhost:3000&response_type=code">authorise</a></div> : 'logged in as '+this.state.user.name+' --- '+this.state.user.snacks+' snacks '}
+        {this.state.user === null ? '' : <button onClick={this.logout}>logout</button>}
         <Links user={this.state.user} access_token={this.state.access_token} refresh_token={this.state.refresh_token} set_user={this.setUser.bind(this)} />
         {this.state.popup ? <PoroPopup poro={this.state.user.mainporo} reason=' to celebrate coming here for the very first time!' /> : ''}
       </div>

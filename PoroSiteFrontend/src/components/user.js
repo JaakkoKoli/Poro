@@ -9,7 +9,7 @@ const User = (props) => {
           <tr>
             <td>
               <h3>{props.user.name}</h3><br />
-              <img src={props.user.profilepic} alt="profile pic" />
+              <img src={props.user.picture} alt="profile pic" />
             </td>
             <td>
               <h4>{props.user.mainporo.name}</h4><br />
