@@ -9,6 +9,7 @@ import About from './components/about'
 import User from './components/user'
 import Poros from './components/poros'
 import Inventory from './components/inventory'
+import { Container, Menu, Dropdown } from 'semantic-ui-react'
 
 const Links = (props) => {
   return (
@@ -16,13 +17,55 @@ const Links = (props) => {
       <Router>
         <div>
           <div>
-            <Link to="/">home</Link> &nbsp;
-                <Link to="/porodex">porodex</Link> &nbsp;
-                <Link to="/shop">shop</Link> &nbsp;
-                <Link to="/about">about</Link> &nbsp;
-                <Link to="/profile">profile</Link> &nbsp;
-                <Link to="/poros">poros</Link> &nbsp;
-                <Link to="/inventory">inventory</Link> 
+            <Menu>
+              <Link to="/">
+              <Menu.Item className='link item' name='Home'>
+                Home
+              </Menu.Item>
+              </Link>
+              <Link to="/porodex">
+              <Menu.Item className='link item' name='Porodex'>
+                Porodex
+              </Menu.Item>
+              </Link>
+              <Link to="/shop">
+              <Menu.Item className='link item' name='Shop'>
+                Shop
+              </Menu.Item>
+              </Link>
+              {props.user !== null  ? 
+              <Dropdown text={props.user.name} className='link item'  name={props.user.name}>
+                <Dropdown.Menu>
+                  <Link to="/profile"><Dropdown.Item>Profile</Dropdown.Item></Link>
+                  <Link to="/poros"><Dropdown.Item>Poros</Dropdown.Item></Link>
+                 <Link to="/inventory"><Dropdown.Item>Inventory</Dropdown.Item></Link>
+                </Dropdown.Menu>
+              </Dropdown>
+              : ''}
+              <Link to="/about">
+              <Menu.Item className='link item'  name='About'>
+                About
+              </Menu.Item>
+              </Link>
+              {props.user === null ?
+              <a href="https://api.twitch.tv/kraken/oauth2/authorize?client_id=pho06vchppcq16eknimsbqagdxkxya&redirect_uri=http://localhost:3000&response_type=code">
+              <Menu.Item className='link item' name='Login'>
+                  Login
+              </Menu.Item>
+              </a>
+              :
+              <Menu.Item onClick={props.logout()} className='link item' name='Logout'>
+                  Logout
+              </Menu.Item>
+              }
+              {
+                props.user === null ? null : 
+              <Menu.Item>
+                You currently have {props.user.snacks} snacks
+              </Menu.Item>
+              }
+            </Menu>
+
           </div>
           <Route exact path="/" render={() => <Home user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
           <Route path="/porodex" render={() => <Porodex user={props.user} types={props.types} access_token={props.access_token} refresh_token={props.refresh_token} />} />
@@ -64,7 +107,7 @@ class App extends React.Component {
     }
   }
 
-  logout = () => {
+  logout = () => () => {
     window.localStorage.clear()
     this.setState({user: null, access_token: null, refresh_token: null})
   }
@@ -74,7 +117,7 @@ class App extends React.Component {
   }
 
   saveUser = () => {
-    window.localStorage.setItem('loggedUserData', JSON.stringify({user: this.state.user, access_token: this.state.access_token, refresh_token: this.state.refresh_token}))
+    window.localStorage.setItem('loggedUserData', JSON.stringify({access_token: this.state.access_token, refresh_token: this.state.refresh_token}))
   }
 
   setUserData = () => {
@@ -87,18 +130,38 @@ class App extends React.Component {
             refresh_token: res.data.refresh_token,
             popup: res.data.new_account
           }, this.saveUser)
+          window.setTimeout(function(){this.setState({popup: null})}.bind(this),4000)
         })
         .catch(e => console.log(e))
   }
 
+  updateUserData = () => {
+    const config = {
+      "headers": {
+        "access_token": this.state.access_token,
+        "refresh_token": this.state.refresh_token
+      }
+    }
+    axios.get('http://localhost:3001/validate', config)
+    .then(res => {
+      console.log(res)
+      this.setState({
+        user: res.data.user,
+        access_token: res.data.access_token,
+        refresh_token: res.data.refresh_token
+      }, this.saveUser)
+    })
+    .catch(e => console.log(e))
+  }
+
   componentWillMount(){
-    if(this.state.code.includes('code=')){
-      this.setState({code: this.state.code.split('?')[1].split('&')[0]}, this.setUserData)
-    }else{
-      const loggedUserJSON = window.localStorage.getItem('loggedUserData')
-      if (loggedUserJSON) {
-        const data = JSON.parse(loggedUserJSON)
-        this.setState({ user: data.user, access_token: data.access_token, refresh_token: data.refresh_token })
+    const loggedUserJSON = window.localStorage.getItem('loggedUserData')
+    if (loggedUserJSON) {
+      const data = JSON.parse(loggedUserJSON)
+      if(data.access_token&&data.refresh_token){
+        this.setState({ access_token: data.access_token, refresh_token: data.refresh_token }, this.updateUserData)
+      }else if(this.state.code.includes('code=')){
+        this.setState({code: this.state.code.split('?')[1].split('&')[0]}, this.setUserData)
       }
     }
   }
@@ -106,12 +169,10 @@ class App extends React.Component {
 
   render() {
     return (
-      <div>
-        {this.state.user === null ?  <div><a href="https://api.twitch.tv/kraken/oauth2/authorize?client_id=pho06vchppcq16eknimsbqagdxkxya&redirect_uri=http://localhost:3000&response_type=code">authorise</a></div> : 'logged in as '+this.state.user.name+' --- '+this.state.user.snacks+' snacks '}
-        {this.state.user === null ? '' : <button onClick={this.logout}>logout</button>}
-        <Links user={this.state.user} access_token={this.state.access_token} refresh_token={this.state.refresh_token} set_user={this.setUser.bind(this)} />
+      <Container>
+        <Links user={this.state.user} access_token={this.state.access_token} refresh_token={this.state.refresh_token} set_user={this.setUser.bind(this)} logout={this.logout} />
         {this.state.popup ? <PoroPopup poro={this.state.user.mainporo} reason=' to celebrate coming here for the very first time!' /> : ''}
-      </div>
+      </Container>
     )
   }
 }

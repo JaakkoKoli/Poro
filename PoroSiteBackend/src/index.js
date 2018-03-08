@@ -37,41 +37,73 @@ app.get('/validate', (request, response)  => {
     "headers": {
       "Authorization": 'OAuth '+request.get('access_token'),
       "Accept": 'application/vnd.twitchtv.v5+json',
-      "Client-ID": conf.client_id
+      "Client-ID": config.client_id
     }
   }
   axios.get('https://api.twitch.tv/kraken', conf)
     .then(r => {
-      if(!r.data.token.valid && !r.data.valid){
-        axios.post('https://api.twitch.tv/kraken/oauth2/token?grant_type=refresh_token&refresh_token='+refresh_token+'&client_id='+config.client_id+'&client_secret='+config.secret)
+      if(!r.data.token.valid){
+        axios.post('https://api.twitch.tv/kraken/oauth2/token?grant_type=refresh_token&refresh_token='+request.get('refresh_token')+'&client_id='+config.client_id+'&client_secret='+config.secret)
           .then(r2 => {
             if(r2.data.access_token && r2.data.refresh_token){
-              response.send({valid: true, access_token: r2.data.access_token, refresh_token: r2.data.refresh_token})
+              User.find({twitchid: r.data.token.user_id})
+              .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
+              .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+              .then(user1 => {
+                user1=user1[0]
+                if(r.data.token.user_name!=user1.name){
+                  User(user1).save()
+                  .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
+                  .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+                    .then((user) => {
+                      response.send({valid: true, user, access_token: r2.data.access_token, refresh_token: r2.data.refresh_token, debug: "1"})
+                    }).catch(err => console.log(err))
+                }else{
+                  let aToken=request.get('access_token')
+                  let rToken=request.get('refresh_token')
+                  if(r.data.access_token){
+                    aToken=r.data.access_token
+                  }
+                  if(r.data.refresh_token){
+                    rToken=r.data.refresh_token
+                  }
+                  response.send({valid: true, user: user1, access_token: aToken, refresh_token: rToken, debug: "4"})
+                }
+              }).catch(err => console.log(err))
+              .catch(err => {
+                console.log(err)
+                response.send({valid: false, access_token, refresh_token, debug: "2"})
+              }).catch(err => console.log(err))
             }
-          })
-          .catch(e => {
-            console.log(e)
-            response.send({valid: false, access_token, refresh_token})
           })
       }else{
         User.find({twitchid: r.data.token.user_id})
-          .then(user => {
-            user=user[0]
-            if(r.data.token.user_name!=user.name){
-              User(user).save()
-                .then(() => {
-                  response.send({valid: true, user, access_token: r.data.access_token, refresh_token: r.data.refresh_token})
-                })
+          .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
+          .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+          .then(user1 => {
+            user1=user1[0]
+            if(r.data.token.user_name!=user1.name){
+              User(user1).save()
+              .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
+              .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+                .then((user) => {
+                  response.send({valid: true, user, access_token: r.data.access_token, refresh_token: r.data.refresh_token, debug: "3"})
+                }).catch(err => console.log(err))
             }else{
-              response.send({valid: true, user, access_token: r.data.access_token, refresh_token: r.data.refresh_token})
+              let aToken=request.get('access_token')
+              let rToken=request.get('refresh_token')
+              if(r.data.access_token){
+                aToken=r.data.access_token
+              }
+              if(r.data.refresh_token){
+                rToken=r.data.refresh_token
+              }
+              response.send({valid: true, user: user1, access_token: aToken, refresh_token: rToken, debug: "4"})
             }
-          })
-        response.send({valid: true, access_token, refresh_token})
-        
-      }
+          }).catch(err => console.log(err))
+       }
     })
-    .catch(err => console.log(err))
-}
+})
 
 app.get('/', (request, response) => {
   Type.find({})
@@ -233,8 +265,7 @@ app.get('/login', (request, response) => {
                   }).catch(err => console.log(err))
                 }).catch(err => console.log(err))
             }
-          })
-          .catch(res=>console.log(res))
+          }).catch(err => console.log(err))
   }else{
     response.send({error: 'missing code'})
   }

@@ -43,7 +43,7 @@ class Shop extends React.Component {
               })
               window.setTimeout(function(){this.setState({new_poro: null})}.bind(this),4000)
             }else{
-
+              console.log("error")
             }
           })
       }
@@ -53,7 +53,9 @@ class Shop extends React.Component {
   render(){
       return (
       <div>
-        {this.state.new_poro===null ? <button onClick={this.buyPoro()}>Buy a Poro -- 100 snacks</button> : <Poro poro={this.state.new_poro} />}
+        {this.state.user !== null ?      
+        this.state.new_poro===null ? <button onClick={this.buyPoro()}>Buy a Poro -- 100 snacks</button> : <Poro poro={this.state.new_poro} />
+        :''}
         <br />
       </div>
     )

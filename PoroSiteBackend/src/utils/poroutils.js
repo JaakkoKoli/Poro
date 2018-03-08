@@ -26,7 +26,7 @@ const getPoro = (types, user_id) => {
         owner: user_id,
         date: Date(),
         experience: 0,
-        level: 0,
+        level: 1,
         healthIV: Math.round(Math.random()*10),
         attackIV: Math.round(Math.random()*10),
         defenseIV: Math.round(Math.random()*10),
