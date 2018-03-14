@@ -7,6 +7,11 @@ const cors = require('cors')
 const Poro = require('./models/poro')
 const User = require('./models/user')
 const Type = require('./models/type')
+const Helmet = require('./models/helmet')
+const Weapon = require('./models/weapon')
+const Misc = require('./models/misc')
+const StatChange = require('./models/statchange')
+const Footwear = require('./models/footwear')
 const porosRouter = require('./controllers/poros')
 const usersRouter = require('./controllers/users')
 const typesRouter = require('./controllers/types')
@@ -46,49 +51,71 @@ app.get('/validate', (request, response)  => {
         axios.post('https://api.twitch.tv/kraken/oauth2/token?grant_type=refresh_token&refresh_token='+request.get('refresh_token')+'&client_id='+config.client_id+'&client_secret='+config.secret)
           .then(r2 => {
             if(r2.data.access_token && r2.data.refresh_token){
-              User.find({twitchid: r.data.token.user_id})
-              .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
-              .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
-              .then(user1 => {
-                user1=user1[0]
-                if(r.data.token.user_name!=user1.name){
-                  User(user1).save()
-                  .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
-                  .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
-                    .then((user) => {
-                      response.send({valid: true, user, access_token: r2.data.access_token, refresh_token: r2.data.refresh_token, debug: "1"})
-                    }).catch(err => console.log(err))
-                }else{
-                  let aToken=request.get('access_token')
-                  let rToken=request.get('refresh_token')
-                  if(r.data.access_token){
-                    aToken=r.data.access_token
-                  }
-                  if(r.data.refresh_token){
-                    rToken=r.data.refresh_token
-                  }
-                  response.send({valid: true, user: user1, access_token: aToken, refresh_token: rToken, debug: "4"})
+              const conf2 = {
+                "headers": {
+                  "Authorization": 'OAuth '+ r2.data.access_token,
+                  "Accept": 'application/vnd.twitchtv.v5+json',
+                  "Client-ID": config.client_id
                 }
-              }).catch(err => console.log(err))
-              .catch(err => {
-                console.log(err)
-                response.send({valid: false, access_token, refresh_token, debug: "2"})
-              }).catch(err => console.log(err))
+              }
+              axios.get('https://api.twitch.tv/kraken', conf2)
+                .then(u1=>{
+                  User.find({twitchid: u1.data.token.user_id})
+                    .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
+                    .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+                    .then(user1 => {
+                      user1=user1[0]
+                      if(u1.data.token.user_name!=user1.name){
+                        User(user1).save()
+                        .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
+                        .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+                        .populate({path:'helmet', populate: {path: 'statchange', model: 'StatChange'}})
+                        .populate({path:'weapon', populate: {path: 'statchange', model: 'StatChange'}})
+                        .populate({path:'misc', populate: {path: 'statchange', model: 'StatChange'}})
+                        .populate({path:'footwear', populate: {path: 'statchange', model: 'StatChange'}})
+                          .then((user) => {
+                            response.send({valid: true, user, access_token: r2.data.access_token, refresh_token: r2.data.refresh_token})
+                          }).catch(err => console.log(err))
+                      }else{
+                        let aToken=request.get('access_token')
+                        let rToken=request.get('refresh_token')
+                        if(r.data.access_token){
+                          aToken=r.data.access_token
+                        }
+                        if(r.data.refresh_token){
+                          rToken=r.data.refresh_token
+                        }
+                        response.send({valid: true, user: user1, access_token: aToken, refresh_token: rToken})
+                      }
+                    }).catch(err => console.log(err))
+                    .catch(err => {
+                      console.log(err)
+                      response.send({valid: false, access_token, refresh_token})
+                    }).catch(err => console.log(err))
+                })
             }
           })
       }else{
         User.find({twitchid: r.data.token.user_id})
           .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
           .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+          .populate({path:'helmet', populate: {path: 'statchange', model: 'StatChange'}})
+          .populate({path:'weapon', populate: {path: 'statchange', model: 'StatChange'}})
+          .populate({path:'misc', populate: {path: 'statchange', model: 'StatChange'}})
+          .populate({path:'footwear', populate: {path: 'statchange', model: 'StatChange'}})
           .then(user1 => {
             user1=user1[0]
             if(r.data.token.user_name!=user1.name){
               User(user1).save()
-              .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
-              .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
-                .then((user) => {
-                  response.send({valid: true, user, access_token: r.data.access_token, refresh_token: r.data.refresh_token, debug: "3"})
-                }).catch(err => console.log(err))
+                .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
+                .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+                .populate({path:'helmet', populate: {path: 'statchange', model: 'StatChange'}})
+                .populate({path:'weapon', populate: {path: 'statchange', model: 'StatChange'}})
+                .populate({path:'misc', populate: {path: 'statchange', model: 'StatChange'}})
+                .populate({path:'footwear', populate: {path: 'statchange', model: 'StatChange'}})
+                  .then((user) => {
+                    response.send({valid: true, user, access_token: r.data.access_token, refresh_token: r.data.refresh_token})
+                  }).catch(err => console.log(err))
             }else{
               let aToken=request.get('access_token')
               let rToken=request.get('refresh_token')
@@ -98,7 +125,7 @@ app.get('/validate', (request, response)  => {
               if(r.data.refresh_token){
                 rToken=r.data.refresh_token
               }
-              response.send({valid: true, user: user1, access_token: aToken, refresh_token: rToken, debug: "4"})
+              response.send({valid: true, user: user1, access_token: aToken, refresh_token: rToken})
             }
           }).catch(err => console.log(err))
        }
@@ -120,6 +147,10 @@ app.get('/addsnacks', (request, response) => {
         User.findByIdAndUpdate(user[0]._id, {$set: {snacks: user[0].snacks+Number(request.query.amount)}})
           .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
           .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+          .populate({path:'helmet', populate: {path: 'statchange', model: 'StatChange'}})
+          .populate({path:'weapon', populate: {path: 'statchange', model: 'StatChange'}})
+          .populate({path:'misc', populate: {path: 'statchange', model: 'StatChange'}})
+          .populate({path:'footwear', populate: {path: 'statchange', model: 'StatChange'}})
           .then(res => {
             response.send({user: res})
           }).catch(() => response.send('error3'))
@@ -154,9 +185,13 @@ app.get('/buyporo', (request, response) => {
                         User.findByIdAndUpdate(user[0]._id, { $set: {poros: poros, snacks: user[0].snacks-100}})
                           .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
                           .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+                          .populate({path:'helmet', populate: {path: 'statchange', model: 'StatChange'}})
+                          .populate({path:'weapon', populate: {path: 'statchange', model: 'StatChange'}})
+                          .populate({path:'misc', populate: {path: 'statchange', model: 'StatChange'}})
+                          .populate({path:'footwear', populate: {path: 'statchange', model: 'StatChange'}})
                           .then(u => {
                             u.snacks-=100
-                            response.send({new_poro: poro, user: u})
+                            response.send({new_poro: p, user: u})
                           }).catch(err => console.log(err))
                       })
                   }).catch(err => console.log(err))
@@ -205,7 +240,7 @@ app.get('/login', (request, response) => {
                         weapon: config.no_weapon,
                         mainporo: "5a989b64734d1d3e5b2dbb2d",
                         misc: config.no_misc,
-                        helmet: config.no_misc,
+                        helmet: config.no_helmet,
                         footwear: config.no_footwear,
                         poros: [],
                         items: [],
@@ -245,6 +280,10 @@ app.get('/login', (request, response) => {
                                               User.findById(currentUser2._id)
                                                 .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
                                                 .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+                                                .populate({path:'helmet', populate: {path: 'statchange', model: 'StatChange'}})
+                                                .populate({path:'weapon', populate: {path: 'statchange', model: 'StatChange'}})
+                                                .populate({path:'misc', populate: {path: 'statchange', model: 'StatChange'}})
+                                                .populate({path:'footwear', populate: {path: 'statchange', model: 'StatChange'}})
                                                 .then(user1 => {
                                                   response.send({user: user1, new_account: true, access_token: res.data.access_token, refresh_token: res.data.refresh_token})
                                                 }).catch(err => console.log(err))
@@ -258,6 +297,10 @@ app.get('/login', (request, response) => {
                       User.findById(currentUser[0]._id)
                         .populate({path:'poros', populate: {path: 'type', model: 'Type'}})
                         .populate({path:'mainporo', populate: {path: 'type', model: 'Type'}})
+                        .populate({path:'helmet', populate: {path: 'statchange', model: 'StatChange'}})
+                        .populate({path:'weapon', populate: {path: 'statchange', model: 'StatChange'}})
+                        .populate({path:'misc', populate: {path: 'statchange', model: 'StatChange'}})
+                        .populate({path:'footwear', populate: {path: 'statchange', model: 'StatChange'}})
                         .then(user1 => {
                           response.send({user: user1, new_account: false, access_token: res.data.access_token, refresh_token: res.data.refresh_token})
                         }).catch(err => console.log(err))

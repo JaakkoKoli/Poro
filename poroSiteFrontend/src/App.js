@@ -1,6 +1,5 @@
-import React from 'react';
-import axios from 'axios';
-import './App.css';
+import React from 'react'
+import axios from 'axios'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 import Home from './components/home'
 import Porodex from './components/porodex'
@@ -8,6 +7,7 @@ import Shop from './components/shop'
 import About from './components/about'
 import User from './components/user'
 import Poros from './components/poros'
+import FullPoro from './components/fullporo'
 import Inventory from './components/inventory'
 import { Container, Menu, Dropdown } from 'semantic-ui-react'
 
@@ -67,12 +67,14 @@ const Links = (props) => {
             </Menu>
 
           </div>
+          <br /><br />
           <Route exact path="/" render={() => <Home user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
           <Route path="/porodex" render={() => <Porodex user={props.user} types={props.types} access_token={props.access_token} refresh_token={props.refresh_token} />} />
-          <Route path="/shop" render={() => <Shop user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} set_user={props.set_user} />} />
+          <Route path="/shop" render={({history}) => <Shop user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} set_user={props.set_user} history={history} />} />
           <Route path="/about" render={() => <About user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
-          <Route path="/profile" render={() => <User user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
-          <Route path="/poros" render={() => <Poros user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
+          <Route path="/profile" render={({history}) => <User user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} history={history} />} />
+          <Route exact path="/poros" render={({history}) => <Poros user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} history={history} />} />
+          <Route path="/poros/:id" render={({match}) => <FullPoro user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} id={match.params.id} />} />
           <Route path="/inventory" render={() => <Inventory user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
         </div>
       </Router>
@@ -123,7 +125,6 @@ class App extends React.Component {
   setUserData = () => {
     axios.get('http://localhost:3001/login?'+this.state.code)
         .then(res => {
-          console.log(res)
           this.setState({
             user: res.data.user,
             access_token: res.data.access_token,
@@ -144,7 +145,6 @@ class App extends React.Component {
     }
     axios.get('http://localhost:3001/validate', config)
     .then(res => {
-      console.log(res)
       this.setState({
         user: res.data.user,
         access_token: res.data.access_token,
@@ -160,13 +160,12 @@ class App extends React.Component {
       const data = JSON.parse(loggedUserJSON)
       if(data.access_token&&data.refresh_token){
         this.setState({ access_token: data.access_token, refresh_token: data.refresh_token }, this.updateUserData)
-      }else if(this.state.code.includes('code=')){
-        this.setState({code: this.state.code.split('?')[1].split('&')[0]}, this.setUserData)
       }
+    }else if(this.state.code.includes('code=')){
+      this.setState({code: this.state.code.split('?')[1].split('&')[0]}, this.setUserData)
     }
   }
   
-
   render() {
     return (
       <Container>
