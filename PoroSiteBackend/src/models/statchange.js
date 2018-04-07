@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
 
-const StatChange = mongoose.model('StatChange', {
+const Statchange = mongoose.model('Statchange', {
     stat: String,
     flat: Boolean,
     amount: Number
 })
 
-module.exports = StatChange
+module.exports = Statchange

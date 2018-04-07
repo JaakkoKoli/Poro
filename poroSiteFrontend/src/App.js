@@ -123,7 +123,7 @@ class App extends React.Component {
   }
 
   setUserData = () => {
-    axios.get('http://localhost:3001/login?'+this.state.code)
+    axios.get('/login?'+this.state.code)
         .then(res => {
           this.setState({
             user: res.data.user,
@@ -143,7 +143,7 @@ class App extends React.Component {
         "refresh_token": this.state.refresh_token
       }
     }
-    axios.get('http://localhost:3001/validate', config)
+    axios.get('/validate', config)
     .then(res => {
       this.setState({
         user: res.data.user,
@@ -161,7 +161,7 @@ class App extends React.Component {
       if(data.access_token&&data.refresh_token){
         this.setState({ access_token: data.access_token, refresh_token: data.refresh_token }, this.updateUserData)
       }
-    }else if(this.state.code.includes('code=')){
+    }else if(this.state.code.indexOf('code=')!==-1){
       this.setState({code: this.state.code.split('?')[1].split('&')[0]}, this.setUserData)
     }
   }

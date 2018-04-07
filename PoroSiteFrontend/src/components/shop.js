@@ -22,7 +22,7 @@ class Shop extends React.Component {
         "refresh_token": this.state.refresh_token
       }
     }
-    axios.get('http://localhost:3001/validate', config)
+    axios.get('/validate', config)
     .then(res => {
       this.setState({
         user: res.data.user,
@@ -55,7 +55,7 @@ class Shop extends React.Component {
             "access_token": this.state.access_token
           }
         }
-        axios.get('http://localhost:3001/buyporo', config)
+        axios.get('/buyporo', config)
           .then(res => {
             if(res.data.user&&res.data.new_poro){
               this.state.set_user(res.data.user)

@@ -50,7 +50,7 @@ class Porodex extends React.Component {
         "refresh_token": this.state.refresh_token
       }
     }
-    axios.get('http://localhost:3001/validate', config)
+    axios.get('/validate', config)
     .then(res => {
       this.setState({
         user: res.data.user,
@@ -62,7 +62,7 @@ class Porodex extends React.Component {
   }
 
   componentDidMount(){
-    axios.get('http://localhost:3001/data')
+    axios.get('/data')
         .then(res => {
           this.setState({
             types: res.data.types
