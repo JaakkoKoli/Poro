@@ -1,7 +1,12 @@
 import React from 'react';
-import { Card, Image, List, Grid } from 'semantic-ui-react'
+import { Card, Image, Button, List, Grid } from 'semantic-ui-react'
+import Axios from 'axios';
 
 const FullPoro = (props) => {
+    const setMain = () => {
+        Axios.get('/setmainporo?id='+poro._id+'&token='+props.access_token)
+        props.user.mainporo=poro
+    }
     let poro = null
     if(props.user){
         poro = props.user.poros.find(p => p._id === props.id)
@@ -26,6 +31,7 @@ const FullPoro = (props) => {
                             {poro.experience+' / '+poro.level*10+' experience to next level '}
                         </Card.Content>
                     </Card>
+                    <Button onClick={setMain}>Set as main Poro</Button>
                     </Grid.Column>
 
                     <Grid.Column width={12}>

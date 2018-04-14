@@ -48,7 +48,7 @@ const Links = (props) => {
               </Menu.Item>
               </Link>
               {props.user === null ?
-              <a href="https://api.twitch.tv/kraken/oauth2/authorize?client_id=pho06vchppcq16eknimsbqagdxkxya&redirect_uri=http://localhost:3000&response_type=code">
+              <a href="https://api.twitch.tv/kraken/oauth2/authorize?client_id=pho06vchppcq16eknimsbqagdxkxya&redirect_uri=https://poros.herokuapp.com/&response_type=code">
               <Menu.Item className='link item' name='Login'>
                   Login
               </Menu.Item>
@@ -71,7 +71,7 @@ const Links = (props) => {
           <Route exact path="/" render={() => <Home user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
           <Route path="/porodex" render={() => <Porodex user={props.user} types={props.types} access_token={props.access_token} refresh_token={props.refresh_token} />} />
           <Route path="/shop" render={({history}) => <Shop user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} set_user={props.set_user} history={history} />} />
-          <Route path="/about" render={() => <About user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
+          <Route path="/about" render={() => <About user={props.user} access_token={props.access_token} set_user={props.set_user} refresh_token={props.refresh_token} />} />
           <Route path="/profile" render={({history}) => <User user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} history={history} />} />
           <Route exact path="/poros" render={({history}) => <Poros user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} history={history} />} />
           <Route path="/poros/:id" render={({match}) => <FullPoro user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} id={match.params.id} />} />
