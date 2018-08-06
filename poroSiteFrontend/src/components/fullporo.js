@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, Image, Button, List, Grid } from 'semantic-ui-react'
 import Axios from 'axios';
+import { changeMainPoro } from "../actions/userActions"
 
 const FullPoro = (props) => {
     const setMain = (e) => {
-        Axios.get('/setmainporo?id='+poro._id+'&token='+props.access_token)
-        props.user.mainporo=poro
+        props.dispatch(changeMainPoro(props.session, props.user._id, poro._id))
         e.disabled=true
     }
     let poro = null

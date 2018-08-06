@@ -7,34 +7,13 @@ class Shop extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      user: props.user,
-      access_token: props.access_token,
-      refresh_token: props.refresh_token,
-      new_poro: null,
-      set_user: props.set_user
+      new_poro: null
     }
   }
     
-  updateUserData = () => {
-    const config = {
-      "headers": {
-        "access_token": this.state.access_token,
-        "refresh_token": this.state.refresh_token
-      }
-    }
-    axios.get('/validate', config)
-    .then(res => {
-      this.setState({
-        user: res.data.user,
-        access_token: res.data.access_token,
-        refresh_token: res.data.refresh_token
-      }, this.saveUser)
-    })
-    .catch(e => console.log(e))
-  }
 
   saveUser = () => {
-    window.localStorage.setItem('loggedUserData', JSON.stringify({access_token: this.state.access_token, refresh_token: this.state.refresh_token}))
+    window.localStorage.setItem('loggedUserData', JSON.stringify({user: this.props.user, session: this.props.session}))
   }
 
   componentWillMount(){
@@ -58,7 +37,7 @@ class Shop extends React.Component {
         axios.get('/buyporo', config)
           .then(res => {
             if(res.data.user&&res.data.new_poro){
-              this.state.set_user(res.data.user)
+              this.props.set_user(res.data.user)
               this.setState({
                 user: res.data.user,
                 new_poro: res.data.new_poro

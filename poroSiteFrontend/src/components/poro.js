@@ -15,7 +15,7 @@ const Poro = (props) => {
           </Card.Description>
         </Card.Content>
         <Card.Content extra textAlign="center">
-          {props.poro.experience+' / '+props.poro.level*10+' experience to next level '}
+          {props.poro.experience+' / '+props.poro.level^3*10+' experience to next level '}
         </Card.Content>
       </Card>
     )
@@ -31,7 +31,7 @@ const Poro = (props) => {
           </Card.Description>
         </Card.Content>
         <Card.Content extra textAlign="center">
-          {props.poro.experience+' / '+props.poro.level*10+' experience to next level '}
+          {props.poro.experience+' / '+props.poro.level^3*10+' experience to next level '}
         </Card.Content>
       </Card>
     )

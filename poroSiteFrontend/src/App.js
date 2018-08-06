@@ -9,7 +9,9 @@ import User from './components/user'
 import Poros from './components/poros'
 import FullPoro from './components/fullporo'
 import Inventory from './components/inventory'
-import { Container, Menu, Dropdown } from 'semantic-ui-react'
+import { Container, Menu, Dropdown, Dimmer, Loader } from 'semantic-ui-react'
+import { connect } from "react-redux"
+import { validateSession, login, set_user, logout } from './actions/userActions'
 
 const Links = (props) => {
   return (
@@ -54,7 +56,7 @@ const Links = (props) => {
               </Menu.Item>
               </a>
               :
-              <Menu.Item onClick={props.logout()} className='link item' name='Logout'>
+              <Menu.Item onClick={() => props.logout()} className='link item' name='Logout'>
                   Logout
               </Menu.Item>
               }
@@ -68,14 +70,14 @@ const Links = (props) => {
 
           </div>
           <br /><br />
-          <Route exact path="/" render={() => <Home user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
-          <Route path="/porodex" render={() => <Porodex user={props.user} types={props.types} access_token={props.access_token} refresh_token={props.refresh_token} />} />
-          <Route path="/shop" render={({history}) => <Shop user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} set_user={props.set_user} history={history} />} />
-          <Route path="/about" render={() => <About user={props.user} access_token={props.access_token} set_user={props.set_user} refresh_token={props.refresh_token} />} />
-          <Route path="/profile" render={({history}) => <User user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} history={history} />} />
-          <Route exact path="/poros" render={({history}) => <Poros user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} history={history} />} />
-          <Route path="/poros/:id" render={({match}) => <FullPoro user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} id={match.params.id} />} />
-          <Route path="/inventory" render={() => <Inventory user={props.user} access_token={props.access_token} refresh_token={props.refresh_token} />} />
+          <Route exact path="/" render={() => <Home user={props.user} dispatch={props.dispatch} />} />
+          <Route path="/porodex" render={() => <Porodex user={props.user} types={props.types} dispatch={props.dispatch} />} />
+          <Route path="/shop" render={({history}) => <Shop user={props.user} set_user={set_user} history={history} dispatch={props.dispatch} />} />
+          <Route path="/about" render={() => <About user={props.user} set_user={set_user} dispatch={props.dispatch} />} />
+          <Route path="/profile" render={({history}) => <User user={props.user} history={history} dispatch={props.dispatch} />} />
+          <Route exact path="/poros" render={({history}) => <Poros user={props.user} history={history} dispatch={props.dispatch} />} />
+          <Route path="/poros/:id" render={({match}) => <FullPoro user={props.user} id={match.params.id} dispatch={props.dispatch} />} />
+          <Route path="/inventory" render={() => <Inventory user={props.user} dispatch={props.dispatch} />} />
         </div>
       </Router>
     </div>
@@ -100,80 +102,44 @@ const PoroPopup = (props) => {
 class App extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {
-      user: null,
-      access_token: null,
-      refresh_token: null,
-      code: window.location.href,
-      popup: null
-    }
-  }
-
-  logout = () => () => {
-    window.localStorage.clear()
-    this.setState({user: null, access_token: null, refresh_token: null})
-  }
-
-  setUser = (user) => {
-    this.setState({user: user})
-  }
-
-  saveUser = () => {
-    window.localStorage.setItem('loggedUserData', JSON.stringify({access_token: this.state.access_token, refresh_token: this.state.refresh_token}))
-  }
-
-  setUserData = () => {
-    axios.get('/login?'+this.state.code)
-        .then(res => {
-          this.setState({
-            user: res.data.user,
-            access_token: res.data.access_token,
-            refresh_token: res.data.refresh_token,
-            popup: res.data.new_account
-          }, this.saveUser)
-          window.setTimeout(function(){this.setState({popup: null})}.bind(this),4000)
-        })
-        .catch(e => console.log(e))
-  }
-
-  updateUserData = () => {
-    const config = {
-      "headers": {
-        "access_token": this.state.access_token,
-        "refresh_token": this.state.refresh_token
-      }
-    }
-    axios.get('/validate', config)
-    .then(res => {
-      this.setState({
-        user: res.data.user,
-        access_token: res.data.access_token,
-        refresh_token: res.data.refresh_token
-      }, this.saveUser)
-    })
-    .catch(e => console.log(e))
   }
 
   componentWillMount(){
     const loggedUserJSON = window.localStorage.getItem('loggedUserData')
     if (loggedUserJSON) {
       const data = JSON.parse(loggedUserJSON)
-      if(data.access_token&&data.refresh_token){
-        this.setState({ access_token: data.access_token, refresh_token: data.refresh_token }, this.updateUserData)
+      if(data.session&&data.user.twitchid){
+        this.props.dispatch({type: "FETCH_USER"})
+        this.props.dispatch(validateSession(data.session, data.user.twitchid))
+      }else{
+        window.localStorage.clear()
       }
-    }else if(this.state.code.indexOf('code=')!==-1){
-      this.setState({code: this.state.code.split('?')[1].split('&')[0]}, this.setUserData)
+    }else if(window.location.href.indexOf('code=')!==-1){
+      this.props.dispatch(login(window.location.href.split('=')[1].split('&')[0]))
     }
   }
-  
+
   render() {
     return (
       <Container>
-        <Links user={this.state.user} access_token={this.state.access_token} refresh_token={this.state.refresh_token} set_user={this.setUser.bind(this)} logout={this.logout} />
-        {this.state.popup ? <PoroPopup poro={this.state.user.mainporo} reason=' to celebrate coming here for the very first time!' /> : ''}
+          <Dimmer active={this.props.user.fetching}>
+            <Loader size='massive'>Loading</Loader>
+          </Dimmer>
+            <Links user={this.props.user.user} poro={this.props.poro} logout={() => this.props.dispatch(logout())}  dispatch={this.props.dispatch} />
+            
       </Container>
     )
   }
 }
-
-export default App;
+// {this.state.popup ? <PoroPopup poro={this.state.user.mainporo} reason=' to celebrate coming here for the very first time!' /> : ''}
+const ConnectedApp = connect(
+  (store) => {
+    return {
+      user: store.user,
+      poro: store.poro
+    }
+  }
+)(App)
+// poro: { poros: [], fetching: boolean, message: String, error: String }
+// user: { user: {}, loggedin: boolean, session: String, fetching: boolean, message: String, error: String }
+export default ConnectedApp;
